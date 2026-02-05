@@ -203,10 +203,14 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 **Persisting authentication tokens:**
 
-The Express server stores Porsche Connect authentication tokens in a file. To persist tokens across container restarts, mount a volume:
+The Express server stores Porsche Connect authentication tokens in a file. To persist tokens across container restarts, bind mount a local file:
 
 ```bash
-docker run -p 8080:8080 -v porsche-tokens:/porsche_ev_insights/api porsche-ev-insights
+# Create an empty tokens file first
+touch ~/.porsche-tokens.json
+
+# Run with bind mount for token persistence
+docker run -p 8080:8080 -v ~/.porsche-tokens.json:/porsche_ev_insights/api/.tokens.json porsche-ev-insights
 ```
 
 ## How to Export Your Data

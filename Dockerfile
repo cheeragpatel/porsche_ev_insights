@@ -33,9 +33,6 @@ FROM node:20-alpine
 # Add nginx for serving static assets
 RUN apk add --no-cache nginx supervisor
 
-# Create non-root user for running services
-RUN addgroup -g 1001 appgroup && adduser -u 1001 -G appgroup -D appuser
-
 WORKDIR /porsche_ev_insights
 
 # Frontend static files
@@ -46,21 +43,18 @@ COPY --from=api_deps /api_workspace/node_modules ./api/node_modules
 COPY server/ ./api/
 
 # Nginx site configuration
-RUN mkdir -p /run/nginx && chown -R appuser:appgroup /run/nginx
+RUN mkdir -p /run/nginx
 COPY docker/nginx-site.conf /etc/nginx/http.d/default.conf
 
 # Supervisor configuration for process management
 COPY docker/supervisord.conf /etc/supervisord.conf
 
-# Set ownership for app directory
-RUN chown -R appuser:appgroup /porsche_ev_insights
-
 # Only expose nginx port (API is accessed internally via reverse proxy)
 EXPOSE 8080
 
-# Health check to verify both nginx and API are responding
+# Health check to verify nginx is responding (API health available at /api/health)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # Launch via supervisor (manages nginx + node processes)
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
