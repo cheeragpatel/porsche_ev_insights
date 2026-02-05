@@ -193,20 +193,19 @@ Docker provides an easy way to run the complete application (frontend + API serv
 docker build -t porsche-ev-insights .
 
 # Run the container
-docker run -p 8080:8080 -p 3001:3001 porsche-ev-insights
+docker run -p 8080:8080 porsche-ev-insights
 ```
 
 Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-**Available ports:**
-- `8080` - Web interface (React frontend)
-- `3001` - API server (Express.js backend for Porsche Connect integration)
+**Ports:**
+- `8080` - Web interface (React frontend + API via nginx reverse proxy)
 
 **Environment variables:**
 You can pass environment variables to the container if needed:
 
 ```bash
-docker run -p 8080:8080 -p 3001:3001 -e NODE_ENV=production porsche-ev-insights
+docker run -p 8080:8080 -e NODE_ENV=production porsche-ev-insights
 ```
 
 ## How to Export Your Data

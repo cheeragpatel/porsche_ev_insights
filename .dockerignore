@@ -17,7 +17,6 @@ dist-ssr
 *.local
 
 # Documentation and non-essential files
-README.md
 screenshots
 wiki
 gh-pages-redirect
