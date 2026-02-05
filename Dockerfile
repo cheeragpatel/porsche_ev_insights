@@ -11,8 +11,8 @@ WORKDIR /build_workspace
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Application source
-COPY index.html vite.config.js eslint.config.js ./
+# Application source (eslint not needed for production build)
+COPY index.html vite.config.js ./
 COPY src/ ./src/
 COPY public/ ./public/
 
@@ -33,25 +33,34 @@ FROM node:20-alpine
 # Add nginx for serving static assets
 RUN apk add --no-cache nginx supervisor
 
+# Create non-root user for running services
+RUN addgroup -g 1001 appgroup && adduser -u 1001 -G appgroup -D appuser
+
 WORKDIR /porsche_ev_insights
 
 # Frontend static files
 COPY --from=frontend_builder /build_workspace/dist ./frontend_dist
 
-# API server with dependencies
+# API server with dependencies (copy entire server directory for future-proofing)
 COPY --from=api_deps /api_workspace/node_modules ./api/node_modules
-COPY server/index.js ./api/
-COPY server/package.json ./api/
+COPY server/ ./api/
 
 # Nginx site configuration
-RUN mkdir -p /run/nginx
+RUN mkdir -p /run/nginx && chown -R appuser:appgroup /run/nginx
 COPY docker/nginx-site.conf /etc/nginx/http.d/default.conf
 
 # Supervisor configuration for process management
 COPY docker/supervisord.conf /etc/supervisord.conf
 
-# Application ports
-EXPOSE 8080 3001
+# Set ownership for app directory
+RUN chown -R appuser:appgroup /porsche_ev_insights
+
+# Only expose nginx port (API is accessed internally via reverse proxy)
+EXPOSE 8080
+
+# Health check to verify both nginx and API are responding
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
 
 # Launch via supervisor (manages nginx + node processes)
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]

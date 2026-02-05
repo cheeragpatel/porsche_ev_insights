@@ -16,11 +16,13 @@ dist-ssr
 .DS_Store
 *.local
 
-# Documentation and non-essential files
+# Documentation files (not needed in container)
+README.md
+CONTRIBUTING.md
+CHANGELOG.md
 screenshots
 wiki
 gh-pages-redirect
-*.md
 
 # Logs
 logs
@@ -38,3 +40,6 @@ server/.tokens.json
 
 # Claude AI files
 .claude
+
+# GitHub workflows
+.github

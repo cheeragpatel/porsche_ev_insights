@@ -201,11 +201,12 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 **Ports:**
 - `8080` - Web interface (React frontend + API via nginx reverse proxy)
 
-**Environment variables:**
-You can pass environment variables to the container if needed:
+**Persisting authentication tokens:**
+
+The Express server stores Porsche Connect authentication tokens in a file. To persist tokens across container restarts, mount a volume:
 
 ```bash
-docker run -p 8080:8080 -e NODE_ENV=production porsche-ev-insights
+docker run -p 8080:8080 -v porsche-tokens:/porsche_ev_insights/api porsche-ev-insights
 ```
 
 ## How to Export Your Data
