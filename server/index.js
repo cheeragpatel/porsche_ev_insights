@@ -254,7 +254,9 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Step 2: Submit email (identifier-first flow)
-    const effectiveState = captchaState || captchaSession || loginState;
+    // Always use loginState - it's set from captchaKey when resuming a captcha session,
+    // or from the fresh OAuth flow when starting new
+    const effectiveState = loginState;
 
     console.log(`[Auth] Step 2: Submitting email${captchaCode ? ' with captcha' : ''}`);
     const identifierUrl = `https://${CONFIG.AUTHORIZATION_SERVER}/u/login/identifier`;
