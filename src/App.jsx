@@ -1677,7 +1677,7 @@ export default function App() {
                 />
               )}
 
-              {activeTab === 'insights' && drivingInsights && (
+              {activeTab === 'insights' && drivingInsights && predictions && (
                 <InsightsTab
                   data={data}
                   units={units}
