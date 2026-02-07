@@ -1,0 +1,45 @@
+# Porsche EV Insights - Docker build exclusions
+
+# Dependencies (will be installed fresh in container)
+node_modules
+server/node_modules
+
+# Build output (will be generated in container)
+dist
+dist-ssr
+
+# Development and IDE files
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+*.local
+
+# Documentation files (not needed in container)
+README.md
+CONTRIBUTING.md
+CHANGELOG.md
+screenshots
+wiki
+gh-pages-redirect
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Docker files (avoid recursive copy)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Sensitive files
+.env*
+server/.tokens.json
+
+# Claude AI files
+.claude
+
+# GitHub workflows
+.github

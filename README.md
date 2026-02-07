@@ -184,6 +184,35 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
+### Run with Docker
+
+Docker provides an easy way to run the complete application (frontend + API server) in a container:
+
+```bash
+# Build the Docker image
+docker build -t porsche-ev-insights .
+
+# Run the container
+docker run -p 8080:8080 porsche-ev-insights
+```
+
+Open [http://localhost:8080](http://localhost:8080) in your browser.
+
+**Ports:**
+- `8080` - Web interface (React frontend + API via nginx reverse proxy)
+
+**Persisting authentication tokens:**
+
+The Express server stores Porsche Connect authentication tokens in a file. To persist tokens across container restarts, bind mount a local file:
+
+```bash
+# Create an empty tokens file first
+touch ~/.porsche-tokens.json
+
+# Run with bind mount for token persistence
+docker run -p 8080:8080 -v ~/.porsche-tokens.json:/porsche_ev_insights/api/.tokens.json porsche-ev-insights
+```
+
 ## How to Export Your Data
 
 1. Open **My Porsche** app on your phone

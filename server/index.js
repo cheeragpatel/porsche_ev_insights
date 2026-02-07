@@ -175,7 +175,7 @@ function resolveUrl(location, baseUrl) {
 
 // OAuth2 Authentication endpoint
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password, captchaCode, captchaState } = req.body;
+  const { email, password, captchaCode, captchaState, captchaSession } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
@@ -189,14 +189,16 @@ app.post('/api/auth/login', async (req, res) => {
     let loginState = '';
 
     // Check if this is a captcha retry (we have stored cookies)
-    if (captchaCode && captchaState) {
-      const storedSession = captchaSessionStore.get(captchaState);
+    // captchaState is the dev name, captchaSession is the production (Vercel) name
+    const captchaKey = captchaState || captchaSession;
+    if (captchaCode && captchaKey) {
+      const storedSession = captchaSessionStore.get(captchaKey);
       if (storedSession) {
         console.log('[Auth] Resuming captcha session with stored cookies');
         cookies = storedSession.cookies;
-        loginState = captchaState;
+        loginState = captchaKey;
         // Clean up the stored session
-        captchaSessionStore.delete(captchaState);
+        captchaSessionStore.delete(captchaKey);
       } else {
         console.log('[Auth] No stored session for captcha state, starting fresh');
       }
@@ -252,7 +254,9 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Step 2: Submit email (identifier-first flow)
-    const effectiveState = captchaState || loginState;
+    // Always use loginState - it's set from captchaKey when resuming a captcha session,
+    // or from the fresh OAuth flow when starting new
+    const effectiveState = loginState;
 
     console.log(`[Auth] Step 2: Submitting email${captchaCode ? ' with captcha' : ''}`);
     const identifierUrl = `https://${CONFIG.AUTHORIZATION_SERVER}/u/login/identifier`;
@@ -317,7 +321,8 @@ app.post('/api/auth/login', async (req, res) => {
             error: 'Captcha required',
             captchaRequired: true,
             captchaImage: captchaSrc,
-            captchaState: effectiveState
+            captchaState: effectiveState,
+            captchaSession: effectiveState
           });
         }
         return res.status(400).json({ error: 'Captcha required but could not extract image' });
@@ -481,6 +486,7 @@ app.post('/api/auth/refresh', async (req, res) => {
     saveTokens(); // Persist to disk
 
     res.json({
+      sessionId,
       expiresIn: tokens.expires_in
     });
 
